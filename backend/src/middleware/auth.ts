@@ -27,7 +27,7 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   try {
     // we will use the secret key we use to create the token to verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string);
-    // userId does not exist on type request. so we will extend the express request type above and make it global
+    // userId does not exist on type request/req. so we will extend the express request type above and make it global
     req.userId = (decoded as JwtPayload).userId;
     // this will call the next function available after  verifying the user auth
     next();
