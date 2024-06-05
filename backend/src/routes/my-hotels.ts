@@ -55,6 +55,8 @@ router.post(
 
       // 1. upload the images to cloudinary
       // we can only upload one image file to cloudinary at a time
+      /*
+      // we can only upload one image file to cloudinary at a time. THIS WAS HOW WE WROTE IT BEFORE WE CONVERTED IT TO A FUNCTION TO REUSE IN UPDATE HOTEL FUNCTION
       const uploadPromises = imageFiles.map(async (image) => {
         // encode the image to base64 string
         const b64 = Buffer.from(image.buffer).toString("base64");
@@ -66,6 +68,8 @@ router.post(
 
       // This will wait for all images to be uploaded before we get bnack a string arraywhich is assigned to the imageUrls variable
       const imageUrls = await Promise.all(uploadPromises);
+      */
+      const imageUrls = await uploadImages(imageFiles);
       // console.log(imageUrls);
       // 2. If the upload was successful, add the URLs to the new hotel
       newHotel.imageUrls = imageUrls;
@@ -99,5 +103,89 @@ router.get("/", verifyToken, async (req: Request, res: Response) => {
     res.status(500).json({ message: "Error fetching hotels" });
   }
 });
+
+// TO GET A SINGLE HOTEL BASE ON THE HOTEL ID
+router.get("/:id", verifyToken, async (req: Request, res: Response) => {
+  // we will get the id of the hotel we want to fetch
+  // the id will be gotten from the request URL
+  // api/my-hotels/637838992736 the number will be assigned to the :id variable
+  // this param.id , the "id" is the /:id we specified above
+  const id = req.params.id.toString();
+  // the logged in user Id get attached to the request when we are logged in and call the API in the verifyToken
+  try {
+    const hotel = await Hotel.findOne({
+      _id: id,
+      userId: req.userId
+    });
+
+    res.json(hotel);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching hotels" });
+  }
+});
+
+// THIS IS TO UPDATE THE EDITED HOTEL AFTER WE SUBMIT THE EDITTED HOTEL
+// :hotelId is a placeholder for the hotel id we want to edit
+router.put(
+  "/:hotelId",
+  verifyToken,
+  upload.array("imageFiles"),
+  async (req: Request, res: Response) => {
+    try {
+      // we will get the form data from the request and save the changes to the hotel document/hotel table in our datbase
+      const updatedHotel: HotelType = req.body;
+      updatedHotel.lastUpdated = new Date();
+
+      // get the hotel we are updating and save the updated details
+      // this param.hotelId , the "hotelId" is the /:hotelId we specified above
+      // the {new: true} will make our hotel (const hotel) to have the most updated values when it returns the updated hotel details/data
+      const hotel = await Hotel.findOneAndUpdate(
+        {
+          _id: req.params.hotelId,
+          userId: req.userId
+        },
+        updatedHotel,
+        { new: true }
+      );
+
+      if (!hotel) {
+        return res.status(404).json({ message: "Hotel not found" });
+      }
+      // and we will upload the images we received to cloudinary and save the urls
+      // remember we added the upload array stuff to the signature of our endpoint so that mutter will handle the parsing of the Files and add it to the request for us
+      // this is the new files the user decides to add whenever they edit the hotel and we will upload it to cloudinary
+      const files = req.files as Express.Multer.File[];
+      // this uploadImages function we wrote will upload the images to cloudinary and return the array of urls to the uploaded images
+      const updatedImageUrls = await uploadImages(files);
+      // we will store the image urls to the updated hotel
+      hotel.imageUrls = [
+        ...updatedImageUrls,
+        ...(updatedHotel.imageUrls || [])
+      ];
+
+      // we will now save the updated hotel
+      await hotel.save();
+
+      res.status(201).json(hotel);
+    } catch (err) {
+      res.status(500).json({ message: "Something went wrong" });
+    }
+  }
+);
+
+async function uploadImages(imageFiles: Express.Multer.File[]) {
+  const uploadPromises = imageFiles.map(async (image) => {
+    // encode the image to base64 string
+    const b64 = Buffer.from(image.buffer).toString("base64");
+    let dataURI = "data:" + image.mimetype + ";base64," + b64;
+    // we are using the cloudinary SDK to upload the images 1 at a timet to the cloudinary database and getting the url to the uploaded image/images
+    const resp = await cloudinary.v2.uploader.upload(dataURI);
+    return resp.url;
+  });
+
+  // This will wait for all images to be uploaded before we get bnack a string arraywhich is assigned to the imageUrls variable
+  const imageUrls = await Promise.all(uploadPromises);
+  return imageUrls;
+}
 
 export default router;

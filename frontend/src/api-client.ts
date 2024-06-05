@@ -106,3 +106,36 @@ export const fetchMyHotels = async (): Promise<HotelType[]> => {
 
   return response.json();
 };
+
+// API TO FETCH A SINGLE HOTEL UISNG THE HOTEL ID FROM DATABSE/BACKEND
+// This Promise<HotelType> is telling our component that the response will be in the form of the HotelType we specified in our backend/src/shared/types.ts . In this case, since it is a single hotel, we will not add array [] to the HotelType
+export const fetchMyHotelById = async (hotelId: string): Promise<HotelType> => {
+  const response = await fetch(`${API_BASE_URL}/api/my-hotels/${hotelId}`, {
+    credentials: "include"
+  });
+
+  if (!response.ok) {
+    throw new Error("Error fetching Hotels");
+  }
+
+  return response.json();
+};
+
+// THIS IS THE API TO UPADTE OUR HOTEL IN OUR SERVER / DATABASE
+export const updateMyHotelById = async (hotelFormData: FormData) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/my-hotels/${hotelFormData.get("hotelId")}`,
+    {
+      method: "PUT",
+      body: hotelFormData,
+      credentials: "include"
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to update Hotel");
+  }
+
+  // this will return the updated hotel data
+  return response.json();
+};
