@@ -1,23 +1,7 @@
 import mongoose from "mongoose";
+import { HotelType } from "../shared/types";
 
-// this is the hotel table columns/fields names and the types.
-export type HotelType = {
-  _id: string;
-  userId: string;
-  name: string;
-  city: string;
-  country: string;
-  description: string;
-  type: string;
-  adultCount: number;
-  childCount: number;
-  facilities: string[];
-  pricePerNight: number;
-  starRating: number;
-  imageUrls: string[];
-  lastUpdated: Date;
-};
-
+// HotelType is the hotel table columns/fields names and the types.
 const hotelSchema = new mongoose.Schema<HotelType>({
   userId: { type: String, required: true },
   name: { type: String, required: true },

@@ -1,5 +1,6 @@
 import { RegisterFormData } from "./pages/Register";
 import { SignInFormData } from "./pages/SignIn";
+import { HotelType } from "../../backend/src/shared/types";
 
 // the API_BASE_URL will come from the environment variable. env file. the reason is dependong if we are developing from our own machine or if we deploy to render. the API_BASE_URL will be different
 
@@ -88,6 +89,19 @@ export const addMyHotel = async (hotelFormData: FormData) => {
 
   if (!response.ok) {
     throw new Error("Failed to add hotel");
+  }
+
+  return response.json();
+};
+
+// Promise<HotelType> is like telling the API how the response or what the response will be like. this is from the hotel table in model folder inn the backend. it is what the hotel table will be like. the reason is because it makes the frontend and backend of the same type mode
+export const fetchMyHotels = async (): Promise<HotelType[]> => {
+  const response = await fetch(`${API_BASE_URL}/api/my-hotels`, {
+    credentials: "include"
+  });
+
+  if (!response.ok) {
+    throw new Error("Error fetching hotels");
   }
 
   return response.json();

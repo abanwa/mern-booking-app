@@ -1,7 +1,8 @@
 import express, { Request, Response } from "express";
 import multer from "multer";
 import cloudinary from "cloudinary";
-import Hotel, { HotelType } from "../models/hotel";
+import Hotel from "../models/hotel";
+import { HotelType } from "../shared/types";
 import verifyToken from "../middleware/auth";
 import { body } from "express-validator";
 
@@ -86,5 +87,17 @@ router.post(
     }
   }
 );
+
+// THIS WILL GET OUR HOTELS IN OUR DATABASE
+router.get("/", verifyToken, async (req: Request, res: Response) => {
+  try {
+    // we will get the logged in user id via the user token and the user the user id to find all the hotels uploaded by the user. req.userId is coming from the verifyToken after it has been decoded
+    const hotels = await Hotel.find({ userId: req.userId });
+    // if there are no hotels, the hotel array will be empty
+    res.json(hotels);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching hotels" });
+  }
+});
 
 export default router;
