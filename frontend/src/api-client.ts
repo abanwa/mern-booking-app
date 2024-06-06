@@ -1,6 +1,6 @@
 import { RegisterFormData } from "./pages/Register";
 import { SignInFormData } from "./pages/SignIn";
-import { HotelType } from "../../backend/src/shared/types";
+import { HotelSearchResponse, HotelType } from "../../backend/src/shared/types";
 
 // the API_BASE_URL will come from the environment variable. env file. the reason is dependong if we are developing from our own machine or if we deploy to render. the API_BASE_URL will be different
 
@@ -137,5 +137,59 @@ export const updateMyHotelById = async (hotelFormData: FormData) => {
   }
 
   // this will return the updated hotel data
+  return response.json();
+};
+
+// TO MAKE SEARCH WHEN WE CLICK THE SEARCH BUTTON
+export type SearchParams = {
+  destination?: string;
+  checkIn?: string;
+  checkOut?: string;
+  adultCount?: string;
+  childCount?: string;
+  page?: string;
+  facilites?: string[];
+  types?: string[];
+  stars?: string[];
+  maxPrice?: string;
+  sortOption?: string;
+};
+
+// HotelSearchResponse is from backend. it specifies how our response that we will get from the backend will be like. it helps to make sure that the backend and frontend response are in sync when it comes to the shape of the response
+export const searchHotels = async (
+  searchParams: SearchParams
+): Promise<HotelSearchResponse> => {
+  // Here, we will build up the url using the url build up object
+  const queryParams = new URLSearchParams();
+  queryParams.append("destination", searchParams.destination || "");
+  queryParams.append("checkIn", searchParams.checkIn || "");
+  queryParams.append("checkOut", searchParams.checkOut || "");
+  queryParams.append("adultCount", searchParams.adultCount || "");
+  queryParams.append("childCount", searchParams.childCount || "");
+  queryParams.append("page", searchParams.page || "");
+
+  // this is part of the filter search
+  queryParams.append("maxPrice", searchParams.maxPrice || "");
+  queryParams.append("sortOption", searchParams.sortOption || "");
+
+  // if facilities are selected/checked to help sort search, we will append each of those facilitiues selected to the queryParams
+  searchParams.facilites?.forEach((facility) =>
+    queryParams.append("facilities", facility)
+  );
+
+  // if types are selected/checked to help sort search, we will append each of those types selected to the queryParams
+  searchParams.types?.forEach((type) => queryParams.append("types", type));
+
+  // if stars are selected/checked to help sort search, we will append each of those stars selected to the queryParams
+  searchParams.stars?.forEach((star) => queryParams.append("stars", star));
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/hotels/search?${queryParams}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Error fetching hotels");
+  }
+
   return response.json();
 };

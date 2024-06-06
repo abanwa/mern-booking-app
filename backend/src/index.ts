@@ -6,12 +6,14 @@ import "dotenv/config";
 //this helps us connect to the mongoDB database  and interact with our database using code just like php mysql helps us connect and intereact with our sql database
 import mongoose from "mongoose";
 
+import cookieParser from "cookie-parser";
+import path from "path";
+
 // we are importing the /register endpoint we created into index.ts
 import userRoutes from "./routes/users";
 import authRoutes from "./routes/auth";
 import myHotelRoutes from "./routes/my-hotels";
-import cookieParser from "cookie-parser";
-import path from "path";
+import hotelRoutes from "./routes/hotels";
 
 // after we run "npm i cloudinary" to save our image uploads, we will import it
 import { v2 as cloudinary } from "cloudinary";
@@ -57,6 +59,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 // TO INSERT A HOTEL RECORD/ BOOK A HOTEL
 app.use("/api/my-hotels", myHotelRoutes);
+
+// THIS IS TO SEARCH HOTEL RECORDS/DATA
+app.use("/api/hotels", hotelRoutes);
 
 // this means that any request that are not API endpoint, let the react-router-dom package handle the redirecting of the request first. The reason we have to do this is because some of our routes are behind conditional logic and won't be part of the static file that we are pointing to be up here because they are generated at request time. Our hotel route is behind a conditional logic and is a protected route, it doesn't exist in the static files that we deploy at deploy time so the code gets a bit confused and thinks it's an API route, so we have to specify explicitly for all requests that are not API routes to go to the index.html of the frontend. This is a pretty standard setup
 app.get("*", (req: Request, res: Response) => {
