@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { useMutation, useQueryClient } from "react-query";
 import * as apiClient from "../api-client";
 import { useAppContext } from "../contexts/AppContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 export type SignInFormData = {
   email: string;
@@ -13,6 +13,7 @@ const SignIn = () => {
   const { showToast } = useAppContext();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const location = useLocation();
 
   const {
     register,
@@ -28,8 +29,8 @@ const SignIn = () => {
       showToast({ message: "Sign in Successful!", type: "SUCCESS" });
       // this will force our validateToken enpoint to run to check whether user is logged in or not in AppContext.
       await queryClient.invalidateQueries("validateToken");
-      // 2. navigate to the home page
-      navigate("/");
+      // 2. navigate to the home page . we will also check if we have a state in our location, if we do, we will redirect to that url stored in our location state otherwise, we will redirect to our home page. our location state was set in the GuestInfoForm component when the user is not logged In
+      navigate(location.state?.from?.pathname || "/");
     },
     onError: async (error: Error) => {
       console.log("sign in error message ", error.message);

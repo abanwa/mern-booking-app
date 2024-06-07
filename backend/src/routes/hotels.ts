@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import Hotel from "../models/hotel";
 import { HotelSearchResponse } from "../shared/types";
+import { param, validationResult } from "express-validator";
 
 const router = express.Router();
 
@@ -20,7 +21,7 @@ router.get("/search", async (req: Request, res: Response) => {
       case "starRating":
         sortOptions = { starRating: -1 };
         break;
-      case "pricePerNight":
+      case "pricePerNightAsc":
         sortOptions = { pricePerNight: 1 };
         break;
 
@@ -130,5 +131,34 @@ const constructSearchQuery = (queryParams: any) => {
 
   return constructedQuery;
 };
+
+// We will get the hotel details that the user searched for or tried to book or clicked to view when the user clicked the view details of the search hotel results
+
+// we will use express validator to validate the query params after the "/:id"
+router.get(
+  "/:id",
+  [param("id").notEmpty().withMessage("Hotel ID is required")],
+  async (req: Request, res: Response) => {
+    // we will check of there is any error when we did our validation using express validator
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const id = req.params.id.toString();
+
+    try {
+      const hotel = await Hotel.findById(id);
+      // if (!hotel) {
+      //   return res.status(400).json({ message: "Hotel Not Found via ID" });
+      // }
+
+      res.json(hotel);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ message: "Error fetching hotel" });
+    }
+  }
+);
 
 export default router;
