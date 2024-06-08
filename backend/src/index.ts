@@ -14,6 +14,7 @@ import userRoutes from "./routes/users";
 import authRoutes from "./routes/auth";
 import myHotelRoutes from "./routes/my-hotels";
 import hotelRoutes from "./routes/hotels";
+import bookingRoutes from "./routes/my-bookings";
 
 // we use "npm i stripe" to install stripe SDK
 
@@ -64,6 +65,9 @@ app.use("/api/my-hotels", myHotelRoutes);
 
 // THIS IS TO SEARCH HOTEL RECORDS/DATA
 app.use("/api/hotels", hotelRoutes);
+
+// THis is to get the loggedIn user's bookings that are stored in the hotel booking array field/column
+app.use("/api/my-bookings", bookingRoutes);
 
 // this means that any request that are not API endpoint, let the react-router-dom package handle the redirecting of the request first. The reason we have to do this is because some of our routes are behind conditional logic and won't be part of the static file that we are pointing to be up here because they are generated at request time. Our hotel route is behind a conditional logic and is a protected route, it doesn't exist in the static files that we deploy at deploy time so the code gets a bit confused and thinks it's an API route, so we have to specify explicitly for all requests that are not API routes to go to the index.html of the frontend. This is a pretty standard setup
 app.get("*", (req: Request, res: Response) => {

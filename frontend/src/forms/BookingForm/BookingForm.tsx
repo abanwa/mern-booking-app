@@ -6,7 +6,7 @@ import {
 import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import { StripeCardElement } from "@stripe/stripe-js";
 import { useSearchContext } from "../../contexts/SearchContext";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useMutation } from "react-query";
 import * as apiClient from "../../api-client";
 import { useAppContext } from "../../contexts/AppContext";
@@ -33,6 +33,7 @@ const BookingForm = ({ currentUser, paymentIntent }: Props) => {
   const stripe = useStripe(); // from stripe
   const elements = useElements(); // from stripe
   //   console.log(currentUser);
+  const navigate = useNavigate();
 
   const search = useSearchContext();
   const { hotelId } = useParams();
@@ -47,7 +48,10 @@ const BookingForm = ({ currentUser, paymentIntent }: Props) => {
         showToast({ message: "Booking Saved!", type: "SUCCESS" });
         // console.log("SUCCESSFULLY PAID");
 
-        // redirect to the booking page if successful
+        // redirect to the all booking page if successful
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
       },
       onError: () => {
         // when the confirmation failed
