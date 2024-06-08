@@ -2,6 +2,10 @@ import React, { useContext, useState } from "react";
 import Toast from "../components/Toast";
 import { useQuery } from "react-query";
 import * as apiClient from "../api-client";
+import { loadStripe, Stripe } from "@stripe/stripe-js";
+
+// to connect to stripe from frontend, we will need our public key that we store in our environment variable file
+const STRIPE_PUB_KEY = import.meta.env.VITE_STRIPE_PUB_KEY || "";
 
 type ToastMessage = {
   message: string;
@@ -11,11 +15,15 @@ type ToastMessage = {
 type AppContext = {
   showToast: (ToastMessage: ToastMessage) => void;
   isLoggedIn: boolean;
+  stripePromise: Promise<Stripe | null>;
 };
 
 // we will default it to undefine. whenever the app loads for the first time, the context will always be undefined
 // this is our context
 const AppContext = React.createContext<AppContext | undefined>(undefined);
+
+// we have stripe variable
+const stripePromise = loadStripe(STRIPE_PUB_KEY);
 
 // This is our provider. Provider is what wraps our components and give our components access to all the things in the context
 // we will export this to our main.tsx and the use it to wrap our App component
@@ -44,7 +52,8 @@ export const AppContextProvider = ({
           //   console.log("appContext toastMessage", toastMessage);
           setToast(toastMessage);
         },
-        isLoggedIn: !isError
+        isLoggedIn: !isError,
+        stripePromise
       }}
     >
       {toast && (

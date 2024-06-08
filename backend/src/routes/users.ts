@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import User from "../models/user";
 import jwt from "jsonwebtoken";
 import { check, validationResult } from "express-validator";
+import verifyToken from "../middleware/auth";
 
 // "npm i bcryptjs"  is used to install the package we will used to encrypt the password
 // "npm i @types/bcryptjs --save-dev"
@@ -9,6 +10,24 @@ import { check, validationResult } from "express-validator";
 // "npm i @types/jsonwebtoken --save-dev" we do --save-dev as we only need the type for development
 
 const router = express.Router();
+
+// This will get the logged in user
+router.get("/me", verifyToken, async (req: Request, res: Response) => {
+  const userId = req.userId;
+
+  try {
+    // this will find the user in our User table base on the user id and the it will select all the user's record except the password
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+});
 
 // "npm i express-validator"
 // the check() is used to validate the the body or form data we submitted to register user and it's gotten from "npm i express-validator"

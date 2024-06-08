@@ -59,6 +59,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
   };
 
   const onSubmit = (data: GuestInfoFormData) => {
+    // we will update the searchValues here
     search.saveSearchValues(
       "",
       data.checkIn,

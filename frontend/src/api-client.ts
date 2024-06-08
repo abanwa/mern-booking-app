@@ -1,12 +1,33 @@
 import { RegisterFormData } from "./pages/Register";
 import { SignInFormData } from "./pages/SignIn";
-import { HotelSearchResponse, HotelType } from "../../backend/src/shared/types";
+import {
+  HotelSearchResponse,
+  HotelType,
+  PaymentIntentResponse,
+  UserType
+} from "../../backend/src/shared/types";
+import { BookingFormData } from "./forms/BookingForm/BookingForm";
+
+// we used "npm i --save @stripe/react-stripe-js @stripe/stripe-js" to install stripe for the frontend
 
 // the API_BASE_URL will come from the environment variable. env file. the reason is dependong if we are developing from our own machine or if we deploy to render. the API_BASE_URL will be different
 
 // because we are using VITE, that is how we import environment variables from .env file
 // the reason we make it || "" is because if we  run "npm run build" and join our frontend to the backend using app.use(express.static(path.join(__dirname, "../../frontend/dist"))), there will be no nee d for the BASE_URL because we will use the same server for the request
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
+// HERE, we will write our API to get the logged in user details except the password from backend
+export const fetchCurrentUser = async (): Promise<UserType> => {
+  const response = await fetch(`${API_BASE_URL}/api/users/me`, {
+    credentials: "include"
+  });
+
+  if (!response.ok) {
+    throw new Error("Error fetching user");
+  }
+
+  return response.json();
+};
 
 // THIS IS WHERE WE WILL PUT ALL OUR FETCH REQUEST
 // we are going to use react-query to handle and making the actual request and storing the state and errors
@@ -202,4 +223,50 @@ export const fetchHotelById = async (hotelId: string): Promise<HotelType> => {
   }
 
   return response.json();
+};
+
+// THIS IS THE API THAT WILL CREATE THE STRIPE PAYMENT INTENT
+// This will create a payment intent base on the hotelId and numberOfNights
+export const createPaymentIntent = async (
+  hotelId: string,
+  numberOfNights: string
+): Promise<PaymentIntentResponse> => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/hotels/${hotelId}/bookings/payment-intent`,
+    {
+      credentials: "include",
+      method: "POST",
+      body: JSON.stringify({ numberOfNights }),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Error fetching payment intent");
+  }
+
+  return response.json();
+};
+
+// THIS WILL INSERT / SAVE THE BOOKED HOTEL DETAILS INTO OUR DATABASE AFTER USER HAVE CONFIRMED PAYMENT VIA STRIPE
+// this BookingFormData is from BookingForm.tsx in the frontend
+export const createRoomBooking = async (formData: BookingFormData) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/hotels/${formData.hotelId}/bookings`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include",
+      body: JSON.stringify(formData)
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Error booking room");
+  }
+  // Since we are not returning or getting back any respons frrom our backend, we will not return anything
 };

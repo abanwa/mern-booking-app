@@ -15,6 +15,8 @@ import authRoutes from "./routes/auth";
 import myHotelRoutes from "./routes/my-hotels";
 import hotelRoutes from "./routes/hotels";
 
+// we use "npm i stripe" to install stripe SDK
+
 // after we run "npm i cloudinary" to save our image uploads, we will import it
 import { v2 as cloudinary } from "cloudinary";
 
