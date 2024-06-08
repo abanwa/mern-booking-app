@@ -8,7 +8,7 @@ import BookingDetailSummary from "../components/BookingDetailSummary";
 import { Elements } from "@stripe/react-stripe-js";
 import { useAppContext } from "../contexts/AppContext";
 
-const Bookings = () => {
+const Booking = () => {
   const { stripePromise } = useAppContext();
   // we will get the searched stiuffs out of the search context
   const search = useSearchContext();
@@ -102,4 +102,4 @@ const Bookings = () => {
   );
 };
 
-export default Bookings;
+export default Booking;
