@@ -141,6 +141,18 @@ const constructSearchQuery = (queryParams: any) => {
   return constructedQuery;
 };
 
+// THIS WILL GET ALL THE HOTELS
+router.get("/", async (req: Request, res: Response) => {
+  try {
+    // the hoetl will be selected based on the lastUpdated. Like, the most recent inserted
+    const hotels = await Hotel.find().sort("-lastUpdated");
+    res.json(hotels);
+  } catch (error) {
+    console.log("error ", error);
+    res.status(500).json({ message: "Error fetching hotels" });
+  }
+});
+
 // We will get the hotel details that the user searched for or tried to book or clicked to view when the user clicked the view details of the search hotel results
 
 // we will use express validator to validate the query params after the "/:id"
@@ -293,5 +305,7 @@ router.post(
     }
   }
 );
+
+//
 
 export default router;
